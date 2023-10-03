@@ -96,9 +96,8 @@ namespace Telegram_Bot
                             else if (userSkiData.FootSize == -1)
                             {
                                 userSkiData.FootSize = parsedValue;
-                                // Тут ви можете викликати функцію для підбору лиж за введеними даними
                                 await client.SendTextMessageAsync(chatId, PickSkis(userSkiData.Height, userSkiData.Weight, userSkiData.FootSize), replyMarkup: GetButtons());
-                                userData.Remove(chatId); // Видалення збережених даних користувача
+                                userData.Remove(chatId); 
                             }
                         }
                         else if (calculate == true)
