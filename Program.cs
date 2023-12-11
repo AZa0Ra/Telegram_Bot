@@ -4,13 +4,47 @@ using Telegram.Bot;
 using System;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
+using System.Data;
+using MySql.Data;
+using MySql.Data.MySqlClient;
+using MySqlX.XDevAPI.Common;
 
 namespace Telegram_Bot
 {
     class Program
     {
-        private static string token { get; } = "";
+        //DataTable dataTable = myfunDt("SELECT * FROM userName");
+        private static string token { get; } = "6523896361:AAFNzToDOLyp5vSc1j3fIjdHT9-4KyyuDRg";
         private static TelegramBotClient client;
+        static string connectionString = "server=194.44.236.9; database=sqlkns23_1_gryu;user=sqlkns23_1_gryu; password=kns23_gryu; charset=cp1251;";
+
+        public static string ConStr { get; set; }
+        public static DataTable myfunDt(string commandString)
+        {
+            DataTable dataTable = new DataTable();
+
+            using (MySqlConnection connection = new MySqlConnection(ConStr))
+            {
+                MySqlCommand mySqlCommand = new MySqlCommand(commandString, connection);
+                try
+                {
+                    connection.Open();
+                    using (MySqlDataReader dataReader = mySqlCommand.ExecuteReader())
+                    {
+                        if (dataReader.HasRows)
+                        {
+                            dataTable.Load(dataReader);
+                        }
+                    }
+                    connection.Close();
+                }
+                catch (Exception e)
+                {
+                }
+            }
+            return dataTable;
+        }
+
         static void Main(string[] args)
         {
             client = new TelegramBotClient(token);
@@ -19,7 +53,6 @@ namespace Telegram_Bot
             Console.ReadLine();
             client.StopReceiving();
         }
-
         static Dictionary<long, SkiData> userData = new Dictionary<long, SkiData>();
         static bool calculate = false;
         private static async void OnMessageHandler(object? sender, MessageEventArgs e)
@@ -48,6 +81,38 @@ namespace Telegram_Bot
                     //    photo: "https://images.unsplash.com/photo-1560710990-9f5d4197b5a2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
                     //    replyMarkup: GetButtons());
                     //    break;
+                    case "Забронювати":
+                        {
+                            try
+                            {
+                                using (MySqlConnection connection = new MySqlConnection(connectionString))
+                                {
+                                    connection.Open();
+                                    string query = "SELECT * FROM IT_HotelRoom"; 
+                                    MySqlCommand command = new MySqlCommand(query, connection);
+
+                                    using (MySqlDataReader reader = command.ExecuteReader())
+                                    {
+                                        string result = "";
+                                        while (reader.Read())
+                                        {
+                                            if (reader.GetString(3) == "1")
+                                            {
+                                                result += $"Кімната: {reader.GetInt32(1)}\n"; // (номер колонки)
+                                                //result += $"room: {reader.GetInt32(1)} - access: {reader.GetString(3)}\n"; // (номер колонки)
+                                            }
+                                                                           
+                                        }
+                                        await client.SendTextMessageAsync(e.Message.Chat.Id, result);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+                            break;
+                        }
                     case "Підібрати лижі":
                         {
                             calculate = true;
